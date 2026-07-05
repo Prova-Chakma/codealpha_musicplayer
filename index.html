@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AURA — Music Player</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ── LAYERED BACKGROUND ── -->
+  <div class="bg-scene" aria-hidden="true">
+    <div class="bg-aurora">
+      <div class="aurora-blob blob-1"></div>
+      <div class="aurora-blob blob-2"></div>
+      <div class="aurora-blob blob-3"></div>
+      <div class="aurora-blob blob-4"></div>
+    </div>
+    <canvas class="particle-canvas" id="particleCanvas"></canvas>
+    <div class="grain-overlay"></div>
+  </div>
+
+  <!-- ── APP SHELL ── -->
+  <main class="app-shell">
+
+    <!-- ══════════════════════════════
+         LEFT PANEL — PLAYER
+    ══════════════════════════════ -->
+    <section class="player-panel glass-card" aria-label="Now Playing">
+
+      <header class="player-header">
+        <div class="brand-lockup">
+          <span class="app-brand">AURA</span>
+          <span class="brand-dot"></span>
+          <span class="now-playing-label" id="nowPlayingLabel">Now Playing</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle colour theme" title="Toggle theme">
+          <span class="toggle-track">
+            <span class="toggle-thumb">
+              <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="12" cy="12" r="4"/>
+                <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
+                <line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/>
+                <line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>
+                <line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/>
+              </svg>
+              <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            </span>
+          </span>
+        </button>
+      </header>
+
+      <!-- ── ALBUM ART ── -->
+      <div class="album-art-scene">
+        <div class="art-halo" id="artHalo"></div>
+        <div class="orbit-ring ring-outer"></div>
+        <div class="orbit-ring ring-inner"></div>
+        <div class="album-art-container" id="albumArtContainer">
+          <img src="" alt="Album cover" id="albumArt" class="album-art" />
+          <div class="album-art-fallback" id="albumArtFallback" aria-hidden="true">
+            <svg class="fallback-icon" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="10" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+              <circle cx="24" cy="24" r="20" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+              <circle cx="24" cy="24" r="3" fill="rgba(255,255,255,0.2)"/>
+            </svg>
+          </div>
+          <div class="art-sheen" aria-hidden="true"></div>
+        </div>
+        <div class="vinyl-disc" id="vinylDisc" aria-hidden="true">
+          <div class="vinyl-label">
+            <div class="vinyl-hole"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SONG INFO ── -->
+      <div class="song-info" id="songInfo">
+        <div class="song-meta-top">
+          <p class="song-artist" id="songArtist">Artist</p>
+          <button class="heart-btn" id="heartBtn" aria-label="Like track" title="Like">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+        </div>
+        <h1 class="song-title" id="songTitle">Song Title</h1>
+        <div class="song-tags">
+          <span class="song-album" id="songAlbum">Album</span>
+          <span class="song-tag-dot">·</span>
+          <span class="song-quality">LOSSLESS</span>
+        </div>
+      </div>
+
+      <!-- ── PROGRESS ── -->
+      <div class="progress-section">
+        <div class="waveform-bars" id="waveformBars" aria-hidden="true"></div>
+        <div class="progress-bar-track" id="progressTrack"
+             role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="progress-buffered" id="progressBuffered"></div>
+          <div class="progress-bar-fill" id="progressFill">
+            <div class="progress-shimmer" aria-hidden="true"></div>
+          </div>
+          <div class="progress-thumb" id="progressThumb" aria-hidden="true">
+            <div class="thumb-inner"></div>
+            <div class="thumb-ring"></div>
+          </div>
+          <div class="progress-tooltip" id="progressTooltip">0:00</div>
+        </div>
+        <div class="time-display">
+          <span id="currentTime">0:00</span>
+          <span class="time-remaining" id="timeRemaining">−0:00</span>
+          <span id="totalDuration">0:00</span>
+        </div>
+      </div>
+
+      <!-- ── CONTROLS ── -->
+      <div class="controls-row">
+        <button class="ctrl-btn ctrl-aux" id="shuffleBtn" aria-label="Shuffle" aria-pressed="false" title="Shuffle (S)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+            <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+            <line x1="4" y1="4" x2="9" y2="9"/>
+          </svg>
+          <span class="aux-glow-dot" id="shuffleDot"></span>
+        </button>
+
+        <button class="ctrl-btn ctrl-nav" id="prevBtn" aria-label="Previous track">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+        </button>
+
+        <button class="ctrl-btn ctrl-play" id="playPauseBtn" aria-label="Play">
+          <div class="play-btn-bg" aria-hidden="true"></div>
+          <div class="play-icon" id="playIcon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="pause-icon" id="pauseIcon" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          </div>
+          <div class="play-ripple" aria-hidden="true"></div>
+          <div class="play-ripple play-ripple-2" aria-hidden="true"></div>
+        </button>
+
+        <button class="ctrl-btn ctrl-nav" id="nextBtn" aria-label="Next track">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2.5-6 5.5 3.9V8.1L8.5 12zM16 6h2v12h-2z"/></svg>
+        </button>
+
+        <button class="ctrl-btn ctrl-aux" id="repeatBtn" aria-label="Repeat" aria-pressed="false" title="Repeat (R)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+            <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+          </svg>
+          <span class="repeat-badge" id="repeatBadge" style="display:none">1</span>
+          <span class="aux-glow-dot" id="repeatDot"></span>
+        </button>
+      </div>
+
+      <!-- ── VOLUME ── -->
+      <div class="volume-row">
+        <button class="vol-icon-btn" id="muteBtn" aria-label="Toggle mute">
+          <svg class="vol-icon" id="volIconHigh" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+          </svg>
+          <svg class="vol-icon" id="volIconMid" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+            <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/>
+          </svg>
+          <svg class="vol-icon" id="volIconLow" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+            <path d="M7 9v6h4l5 5V4l-5 5H7z"/>
+          </svg>
+          <svg class="vol-icon" id="volIconMute" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
+        </button>
+        <div class="volume-slider-wrap">
+          <div class="volume-slider-track" id="volumeTrack"
+               role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" tabindex="0">
+            <div class="volume-slider-fill" id="volumeFill" style="width:80%"></div>
+            <div class="volume-thumb" id="volumeThumb" style="left:80%">
+              <div class="vol-thumb-inner"></div>
+            </div>
+          </div>
+          <div class="volume-glow" id="volumeGlow" style="width:80%"></div>
+        </div>
+        <span class="vol-label" id="volLabel">80</span>
+      </div>
+
+    </section>
+
+    <!-- ══════════════════════════════
+         RIGHT PANEL — PLAYLIST
+    ══════════════════════════════ -->
+    <section class="playlist-panel glass-card" aria-label="Playlist">
+
+      <header class="playlist-header">
+        <div class="playlist-title-row">
+          <h2 class="playlist-title">Queue</h2>
+          <span class="playlist-count" id="playlistCount">0 tracks</span>
+        </div>
+        <div class="header-vis" id="headerVis" aria-hidden="true">
+          <div class="hv-bar"></div>
+          <div class="hv-bar"></div>
+          <div class="hv-bar"></div>
+        </div>
+      </header>
+
+      <ul class="playlist-list" id="playlistList" role="listbox" aria-label="Tracks"></ul>
+
+      <footer class="playlist-footer">
+        <span>Space · play &nbsp;|&nbsp; S · shuffle &nbsp;|&nbsp; R · repeat</span>
+      </footer>
+
+    </section>
+...
+</main>
+
+<audio id="audioPlayer"></audio>
+
+<script src="script.js"></script>
+</body>
+</html>
